@@ -1,4 +1,4 @@
-# monday-claude
+# claude-monday
 
 A small CLI (`mon.js`) and a Claude Code skill for working with monday.com from your terminal or from Claude. It reads and updates tasks, posts updates that follow your team's conventions, and remembers which Claude session worked on which task and merge request.
 
@@ -35,7 +35,7 @@ Then tell Claude **"set up monday-tasks"**. It gives you one command to run in a
 Without the plugin:
 
 ```bash
-git clone https://github.com/pravnyadv/monday-claude.git && cd monday-claude
+git clone https://github.com/pravnyadv/claude-monday.git && cd claude-monday
 ./install.sh
 node ./mon.js setup
 ```

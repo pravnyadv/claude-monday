@@ -11,8 +11,8 @@ Thanks for helping out. This is a small, dependency-free tool, keep it that way.
 ## Developing
 
 ```bash
-git clone https://github.com/pravnyadv/monday-claude.git
-cd monday-claude
+git clone https://github.com/pravnyadv/claude-monday.git
+cd claude-monday
 npm test            # unit tests — no network, no token
 ```
 

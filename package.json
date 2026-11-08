@@ -1,5 +1,5 @@
 {
-  "name": "monday-claude",
+  "name": "claude-monday",
   "version": "1.3.0",
   "description": "Account-agnostic monday.com CLI and Claude Code skill for reading and writing tasks from the terminal.",
   "license": "MIT",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pravnyadv/monday-claude.git"
+    "url": "https://github.com/pravnyadv/claude-monday.git"
   },
   "engines": {
     "node": ">=20"

@@ -6,7 +6,7 @@
   },
   "plugins": [
     {
-      "name": "monday-tasks",
+      "name": "monday",
       "source": "./",
       "description": "Account-agnostic monday.com CLI + Claude Code skill for reading and writing tasks."
     }

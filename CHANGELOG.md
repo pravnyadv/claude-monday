@@ -6,6 +6,12 @@ semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+- The plugin is now `monday@pravnyadv` (was `monday-tasks@pravnyadv`) and the repo is `claude-monday`.
+  Reinstall with `/plugin install monday@pravnyadv`.
+- Per-account files moved from `~/.config/monday-claude/` to `~/.config/claude-monday/`. Move the old
+  folder across to keep your token, board references and session links.
+
 ### Added
 - `attach <updateId> <file> [more...]`: attach local files to an update or reply (images show inline),
   through monday's multipart `/file` endpoint. Only a 429 is retried, since an upload may have landed.

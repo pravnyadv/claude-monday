@@ -8,12 +8,12 @@ const { pickBoards } = require('../mon.js');
 
 test('withLinksHook adds the hook to each event, keeps everything else, and is idempotent', () => {
   const before = { theme: 'dark', hooks: { Stop: [{ matcher: '', hooks: [{ type: 'command', command: 'afplay x.aiff' }] }] } };
-  const after = withLinksHook(before, '/opt/monday-claude/hooks/links-hook.js');
+  const after = withLinksHook(before, '/opt/claude-monday/hooks/links-hook.js');
   assert.equal(after.theme, 'dark');
   assert.equal(after.hooks.Stop.length, 2);
   assert.equal(after.hooks.Stop[0].hooks[0].command, 'afplay x.aiff');
   assert.equal(after.hooks.PostToolUse[0].matcher, 'Edit|Write|NotebookEdit|Bash');
-  assert.deepEqual(after.hooks.UserPromptSubmit[0].hooks[0], { type: 'command', command: 'node "/opt/monday-claude/hooks/links-hook.js"', timeout: 5 });
+  assert.deepEqual(after.hooks.UserPromptSubmit[0].hooks[0], { type: 'command', command: 'node "/opt/claude-monday/hooks/links-hook.js"', timeout: 5 });
   assert.equal(hasLinksHook(before), false);
   assert.equal(hasLinksHook(after), true);
   assert.deepEqual(withLinksHook(after, '/elsewhere/hooks/links-hook.js'), after); // a moved clone isn't added twice

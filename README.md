@@ -27,7 +27,7 @@ In Claude Code:
 
 ```
 /plugin marketplace add pravnyadv/claude-plugins
-/plugin install monday-tasks@pravnyadv
+/plugin install monday@pravnyadv
 ```
 
 Then tell Claude **"set up monday-tasks"**. It gives you one command to run in a terminal, `mon.js setup`, which asks for your monday token (hidden input; get one from your avatar, Developers, My access tokens), asks which boards to track, and turns on session links.

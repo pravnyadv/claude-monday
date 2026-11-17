@@ -1,0 +1,6 @@
+#!/bin/sh
+# mon from anywhere: link this file into your PATH (install.sh does it as ~/.local/bin/mon).
+# It loads the repo's .env when there is one, so a token kept there works from any directory.
+dir=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
+if [ -f "$dir/.env" ]; then exec node --env-file="$dir/.env" "$dir/mon.js" "$@"; fi
+exec node "$dir/mon.js" "$@"

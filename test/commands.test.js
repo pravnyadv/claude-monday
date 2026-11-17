@@ -307,3 +307,16 @@ test('desc-get and get --full page through every description block, past the API
   setRuntime({ ref: REF, api, flags: { full: true } });
   assert.equal((await cmds.get(['42'])).description.split('\n').length, 130);
 });
+
+test('MON_READONLY=1 refuses every write but lets reads and dry runs through', () => {
+  const { readOnlyRefusal } = require('../mon.js');
+  const ro = { MON_READONLY: '1' };
+  assert.equal(readOnlyRefusal('get', ['1'], {}, ro), null);
+  assert.equal(readOnlyRefusal('mine', [], {}, ro), null);
+  assert.equal(readOnlyRefusal('links', ['42'], {}, ro), null);
+  assert.match(readOnlyRefusal('links', ['add', '42'], {}, ro), /links add writes/);
+  assert.match(readOnlyRefusal('update', ['42', 'x'], {}, ro), /mon update writes/);
+  assert.match(readOnlyRefusal('status', ['42', 'Done'], {}, ro), /mon status writes/);
+  assert.equal(readOnlyRefusal('update', ['42', 'x'], { 'dry-run': true }, ro), null);
+  assert.equal(readOnlyRefusal('update', ['42', 'x'], {}, {}), null);
+});

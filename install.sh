@@ -11,7 +11,12 @@ mkdir -p "$DEST"
 # substitute the real path so the skill works without the plugin runtime.
 sed "s|\$CLAUDE_PLUGIN_ROOT|$CLONE_DIR|g" "$CLONE_DIR/skills/monday-tasks/SKILL.md" > "$DEST/SKILL.md"
 
+# `mon` on your PATH: a link to bin/mon, which finds this clone and its .env from wherever it is run.
+mkdir -p "$HOME/.local/bin"
+ln -sf "$CLONE_DIR/bin/mon" "$HOME/.local/bin/mon"
+
 echo "Installed skill -> $DEST"
+echo "Command        -> ~/.local/bin/mon (make sure ~/.local/bin is on your PATH)"
 echo "CLI            -> $CLONE_DIR/mon.js"
 echo
 echo "Next, in a terminal (asks for your monday token, hidden, then which boards to track,"

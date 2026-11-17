@@ -21,6 +21,10 @@ semantic versioning.
   so a dashboard can link, hide subitems and finished groups, and show age without more queries.
 - `get --json`: the item's `creator` and `createdAt`, from monday's own record (activity logs only reach back a few months).
 - Task-switch nudge: when a prompt names only monday items other than the session's own and the session's
+- `MON_READONLY=1`: every command that writes (to monday or to the local link store) is refused unless it
+  is a `--dry-run`; reads run as usual. For automation that may look but not write yet.
+- `bin/mon`: a launcher that runs this clone's `mon.js` from any directory and loads its `.env` when there
+  is one; `install.sh` links it as `~/.local/bin/mon`.
   context already holds `MONDAY_SWITCH_NUDGE_TOKENS` (default 60000; `0` turns it off), the links hook asks
   Claude to suggest a fresh session for the new task. The hook now runs sync on UserPromptSubmit for this;
   installs registered before this keep the async entry until it is edited by hand.

@@ -1659,6 +1659,21 @@ function printHelp() {
   console.log(block.replace(/^ \* ?/gm, '').trim());
 }
 
+/** The commands that only read. Under MON_READONLY=1 every other one is refused unless it is a --dry-run. */
+const READ_COMMANDS = new Set(['help', 'whoami', 'people', 'labels', 'list', 'search', 'get', 'mine', 'updates', 'update-get', 'update-images',
+  'desc-get', 'desc-images', 'activity', 'insights', 'automations', 'meetings', 'links', 'resume']);
+
+/**
+ * Why a command may not run in read-only mode, or null. MON_READONLY=1 is for automation that may look
+ * but not write (a review being prepared before its owner says post); `links add` and `links import`
+ * write the local link store, so they count as writes too.
+ */
+function readOnlyRefusal(cmd, positional, flags, env = process.env) {
+  if (env.MON_READONLY !== '1' || flags['dry-run']) return null;
+  if (cmd === 'links' && ['add', 'import'].includes(positional[0])) return `mon links ${positional[0]} writes, and MON_READONLY=1 allows only reads and --dry-run`;
+  return READ_COMMANDS.has(cmd) ? null : `mon ${cmd} writes, and MON_READONLY=1 allows only reads and --dry-run`;
+}
+
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   if (!cmd || cmd === 'help' || cmd === '-h' || cmd === '--help') { printHelp(); process.exit(cmd ? 0 : 1); }
@@ -1671,6 +1686,8 @@ async function main() {
     process.exit(1);
   }
   JSON_OUT = !!FLAGS.json;
+  const refused = readOnlyRefusal(cmd, positional, FLAGS);
+  if (refused) { console.error(refused); process.exit(1); }
   bootConfig();
   if (cmd === 'setup') {
     // setup gets the token itself
@@ -1693,6 +1710,7 @@ async function main() {
 if (require.main === module) main();
 
 module.exports = {
+  readOnlyRefusal,
   normalize, labelsFromSettings, blocksToMarkdown, detectColumn, resolvePerson,
   statusColumnValues, assigneeColumnValues, nextDelay, createClient, resolveToken,
   resolveBody, writeFileAtomic, parseArgs, pickBoards, isDoneStatus, unansweredMentions, describeActivity,

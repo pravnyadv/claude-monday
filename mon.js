@@ -901,7 +901,7 @@ async function myOpenItems(me, boards) {
   const open = [];
   for (const b of boards.filter((x) => x.assigneeColumn)) {
     const cols = JSON.stringify([b.statusColumn].filter(Boolean));
-    const sel = `cursor items{ id name parent_item{ name } column_values(ids:${cols}){ text } }`;
+    const sel = `cursor items{ id name url updated_at group{ title } parent_item{ id name } column_values(ids:${cols}){ text } }`;
     let page = (await api(
       `query($b:[ID!],$v:CompareValue!){ boards(ids:$b){ items_page(limit:100, query_params:{rules:[{column_id:"${b.assigneeColumn}", compare_value:$v, operator:any_of}]}){ ${sel} } } }`,
       { b: [String(b.id)], v: [`person-${me}`] }
@@ -911,7 +911,7 @@ async function myOpenItems(me, boards) {
         const status = it.column_values[0]?.text || null;
         // a subitem's own name ("backend") means little without its task's
         const name = it.parent_item?.name ? `${it.parent_item.name} > ${it.name}` : it.name;
-        if (!isDoneStatus(status, REF.doneStatuses)) open.push({ id: String(it.id), name, status, board: b.name });
+        if (!isDoneStatus(status, REF.doneStatuses)) open.push({ id: String(it.id), name, status, board: b.name, url: it.url || null, group: it.group?.title || null, updatedAt: it.updated_at || null, parentId: it.parent_item?.id ? String(it.parent_item.id) : null });
       }
       if (!page.cursor || open.length > 1000) break;
       page = (await api(`query($c:String!){ next_items_page(cursor:$c, limit:100){ ${sel} } }`, { c: page.cursor })).next_items_page;
@@ -933,11 +933,12 @@ async function unansweredMentionsOf(me, boards, since) {
   }
   const pending = unansweredMentions(updates, me, since);
   const names = {};
+  const urls = {};
   const ids = [...new Set(pending.map((m) => m.itemId))];
   for (let i = 0; i < ids.length; i += 100) {
-    (await api(`query($i:[ID!]){ items(ids:$i){ id name } }`, { i: ids.slice(i, i + 100) })).items.forEach((it) => { names[it.id] = it.name; });
+    (await api(`query($i:[ID!]){ items(ids:$i){ id name url } }`, { i: ids.slice(i, i + 100) })).items.forEach((it) => { names[it.id] = it.name; urls[it.id] = it.url; });
   }
-  return pending.map((m) => ({ ...m, author: nameOf(REF.people, m.creatorId), itemName: names[m.itemId] || null }));
+  return pending.map((m) => ({ ...m, author: nameOf(REF.people, m.creatorId), itemName: names[m.itemId] || null, itemUrl: urls[m.itemId] || null }));
 }
 
 /** How many Claude sessions the session links tie to each item; {} when links aren't available. */
@@ -1141,7 +1142,7 @@ const cmds = {
     const full = !!FLAGS.full;
     const n = Number(FLAGS.updates || (full ? 5 : 0));
     const d = await api(
-      `query($id:[ID!]){ items(ids:$id){ id name url group{title} board{id name} column_values{ id type text column{ title } }
+      `query($id:[ID!]){ items(ids:$id){ id name url created_at creator{ name } group{title} board{id name} column_values{ id type text column{ title } }
         ${n ? `updates(limit:${n}){ ${UPDATE_FIELDS} }` : ''} } }`,
       { id: [String(itemId)] }
     );
@@ -1155,7 +1156,7 @@ const cmds = {
       if (c.text) log(`  ${c.column?.title || c.id}${full ? ` (${c.id}, ${c.type})` : ''}${role ? ' [' + role + ']' : ''}: ${c.text}`);
       return { id: c.id, type: c.type, title: c.column?.title || c.id, text: c.text, role };
     });
-    const out = { id: String(it.id), name: it.name, url: it.url, board: { id: String(it.board.id), name: it.board.name }, group: it.group?.title, columns: cols.filter((c) => c.text) };
+    const out = { id: String(it.id), name: it.name, url: it.url, createdAt: it.created_at || null, creator: it.creator?.name || null, board: { id: String(it.board.id), name: it.board.name }, group: it.group?.title, columns: cols.filter((c) => c.text) };
     if (full) {
       out.emptyColumns = cols.filter((c) => !c.text).map((c) => ({ id: c.id, type: c.type, title: c.title }));
       log(`  (empty: ${out.emptyColumns.map((c) => `${c.title} (${c.id})`).join(', ')})`);

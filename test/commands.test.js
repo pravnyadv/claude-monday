@@ -320,3 +320,15 @@ test('MON_READONLY=1 refuses every write but lets reads and dry runs through', (
   assert.equal(readOnlyRefusal('update', ['42', 'x'], { 'dry-run': true }, ro), null);
   assert.equal(readOnlyRefusal('update', ['42', 'x'], {}, {}), null);
 });
+
+test('people --photos adds each person\'s photo from the account; without it nothing is fetched', async () => {
+  const calls = [];
+  const api = async (query, vars) => (calls.push(query), /photo_thumb_small/.test(query) ? { users: [{ id: '70000001', photo_thumb_small: 'https://files.example/a.png' }] } : assert.fail(query));
+  setRuntime({ ref: REF, api, flags: { photos: true } });
+  const rows = await cmds.people(['alex']);
+  assert.deepEqual(rows, [{ name: 'Alex Morgan', id: '70000001', photo: 'https://files.example/a.png' }]);
+  setRuntime({ ref: REF, api, flags: {} });
+  calls.length = 0;
+  assert.deepEqual(await cmds.people(['jordan']), [{ name: 'Jordan Lee', id: '70000002' }]);
+  assert.equal(calls.length, 0);
+});

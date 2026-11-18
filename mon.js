@@ -17,7 +17,7 @@
  *   init [boardId...]                    No args: list your boards. With ids: configure them.
  *   refresh                              Re-fetch status labels + people for configured boards.
  *   whoami                               Show the authenticated user.
- *   people [name]                        Look up people ids (all, or names containing <name>).
+ *   people [name] [--photos]             Look up people ids (all, or names containing <name>); --photos adds each one's photo.
  *   labels [boardId]                     List valid status labels (all configured boards, or one).
  *
  *   list <boardId>                       List items on a board (id, name, status).
@@ -404,7 +404,7 @@ function blocksToMarkdown(blocks) {
   }).join('\n');
 }
 
-const BOOL_FLAGS = new Set(['json', 'dry-run', 'allow-style', 'full', 'write', 'keep-assignees', 'transcript', 'all', 'yes', 'no-hooks', 'no-names', 'print', 'tasks', 'new']);
+const BOOL_FLAGS = new Set(['json', 'dry-run', 'allow-style', 'full', 'write', 'keep-assignees', 'transcript', 'all', 'yes', 'no-hooks', 'no-names', 'print', 'tasks', 'new', 'photos']);
 const VALUE_FLAGS = new Set(['boards', 'cc', 'to', 'status', 'mr', 'body', 'estimate', 'by', 'days', 'limit', 'images', 'id', 'since', 'until', 'updates', 'item', 'session', 'branch', 'repo', 'url', 'model']);
 const LIST_FLAGS = new Set(['cc', 'mr']);
 
@@ -582,6 +582,18 @@ async function fetchPeople() {
     if (batch.length < 200) break;
   }
   return people;
+}
+
+/** Every active user's small profile photo by id, paging through the account. */
+async function fetchPhotos() {
+  const photos = new Map();
+  for (let page = 1; ; page++) {
+    const d = await api(`query($p:Int!){ users(limit:200, page:$p){ id photo_thumb_small } }`, { p: page });
+    const batch = d.users || [];
+    batch.forEach((u) => photos.set(String(u.id), u.photo_thumb_small || null));
+    if (batch.length < 200) break;
+  }
+  return photos;
 }
 
 /** List every accessible active board, paging through. */
@@ -1064,7 +1076,9 @@ const cmds = {
 
   async people([filter]) {
     const lc = (filter || '').toLowerCase();
-    const rows = Object.entries(REF.people).filter(([n]) => n[0] !== '_' && n.toLowerCase().includes(lc)).map(([name, id]) => ({ name, id: String(id) }));
+    // --photos reads the account live for each person's small profile photo
+    const photo = FLAGS.photos ? await fetchPhotos() : null;
+    const rows = Object.entries(REF.people).filter(([n]) => n[0] !== '_' && n.toLowerCase().includes(lc)).map(([name, id]) => ({ name, id: String(id), ...(photo ? { photo: photo.get(String(id)) ?? null } : {}) }));
     rows.forEach((r) => log(`  ${r.id}  ${r.name}`));
     if (!rows.length) log(`nobody matches "${filter}" (new teammate? run  mon.js refresh)`);
     return rows;

@@ -56,3 +56,10 @@ test('composePost: a cc that is already mentioned in the body is refused', () =>
 test('mentionIds reads every anchor id', () => {
   assert.deepEqual(mentionIds('<a data-mention-id="1">x</a> <a data-mention-id="22">y</a>'), ['1', '22']);
 });
+
+test('expandMentions: a full name typed after @ is one mention, not the name plus a leftover surname', () => {
+  const strip = (h) => h.replace(/<a [^>]*>/g, '[').replace(/<\/a>/g, ']');
+  assert.equal(strip(expandMentions('<p>@Alex Morgan rechecked it</p>', people, resolvePerson).html), '<p>[@Alex Morgan] rechecked it</p>');
+  assert.equal(strip(expandMentions('<p>@Alex please Check This</p>', people, resolvePerson).html), '<p>[@Alex Morgan] please Check This</p>');
+  assert.equal(strip(expandMentions('<p>@casey kim and @Jordan</p>', people, resolvePerson).html), '<p>[@CASEY KIM] and [@Jordan Lee]</p>');
+});

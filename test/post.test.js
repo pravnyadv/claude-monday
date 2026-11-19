@@ -63,3 +63,11 @@ test('expandMentions: a full name typed after @ is one mention, not the name plu
   assert.equal(strip(expandMentions('<p>@Alex please Check This</p>', people, resolvePerson).html), '<p>[@Alex Morgan] please Check This</p>');
   assert.equal(strip(expandMentions('<p>@casey kim and @Jordan</p>', people, resolvePerson).html), '<p>[@CASEY KIM] and [@Jordan Lee]</p>');
 });
+
+test('composePost: a post that opens with a mention puts the greeting on its own line', () => {
+  const strip = (h) => h.replace(/<a [^>]*>/g, '[').replace(/<\/a>/g, ']');
+  assert.equal(strip(composePost('<p>@Alex rechecked: 4 fixed.</p>', opts).html), '<p>[@Alex Morgan]</p><p>rechecked: 4 fixed.</p>');
+  assert.equal(strip(composePost('<p>@Alex, @Jordan please check</p><p>more</p>', opts).html), '<p>[@Alex Morgan], [@Jordan Lee]</p><p>please check</p><p>more</p>');
+  assert.equal(strip(composePost('<p>@Alex</p><p>hi</p>', opts).html), '<p>[@Alex Morgan]</p><p>hi</p>');
+  assert.equal(strip(composePost('<p>Thanks @Alex</p>', opts).html), '<p>Thanks [@Alex Morgan]</p>');
+});

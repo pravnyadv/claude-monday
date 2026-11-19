@@ -515,10 +515,10 @@ function handoffBody(body, { toName, mrs = [] }) {
   return html;
 }
 
-/** Put the greeting mention at the start of the first paragraph when the body doesn't mention them. */
+/** Greet the person on the post's first line, on its own, when the body doesn't mention them. */
 function withGreeting(html, personId, anchorHtml) {
   if (mentionIds(html).includes(String(personId))) return html;
-  return /^<p>/i.test(html) ? html.replace(/^<p>/i, `<p>${anchorHtml} `) : `<p>${anchorHtml}</p>${html}`;
+  return `<p>${anchorHtml}</p>${html}`;
 }
 
 /** The status a handoff moves to: the board's configured one, else its "Ready For QA"-like label. */

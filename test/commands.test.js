@@ -94,7 +94,7 @@ test('handoff: posts the update first, then status + estimate + assignee in one 
   const m = f.mutations();
   assert.equal(m.length, 2);
   assert.match(m[0].query, /create_update/);
-  assert.match(m[0].vars.b, /^<p><a [^>]*70000001[^>]*>@Alex Morgan<\/a> this is ready\.<\/p><p>MR: <a href="https:\/\/git\/x\/-\/merge_requests\/7">/);
+  assert.match(m[0].vars.b, /^<p><a [^>]*70000001[^>]*>@Alex Morgan<\/a><\/p><p>this is ready\.<\/p><p>MR: <a href="https:\/\/git\/x\/-\/merge_requests\/7">/);
   assert.match(m[0].vars.b, /<p>CC: <a [^>]*70000002/);
   assert.deepEqual(JSON.parse(m[1].vars.cv), { status: { label: 'Ready For QA' }, numeric_dev: '6', person: { personsAndTeams: [{ id: 70000001, kind: 'person' }] } });
   assert.equal(r.status, 'Ready For QA');
@@ -158,7 +158,7 @@ test('describeActivity: column changes by type, group moves, follow noise droppe
 test('handoff helpers: body, greeting, default status, hook runs', () => {
   assert.equal(handoffBody(null, { toName: 'Sub', mrs: ['https://g/mr/1'] }), '<p>@{Sub} over to you.</p><p>MR: <a href="https://g/mr/1">https://g/mr/1</a></p>');
   assert.equal(handoffBody('<p>see https://g/mr/1</p>', { toName: 'Sub', mrs: ['https://g/mr/1'] }), '<p>see https://g/mr/1</p>');
-  assert.equal(withGreeting('<p>hi</p>', '7', 'A'), '<p>A hi</p>');
+  assert.equal(withGreeting('<p>hi</p>', '7', 'A'), '<p>A</p><p>hi</p>');
   assert.equal(withGreeting('<ul><li>x</li></ul>', '7', 'A'), '<p>A</p><ul><li>x</li></ul>');
   assert.equal(withGreeting('<p><a data-mention-id="7">@S</a> hi</p>', '7', 'A'), '<p><a data-mention-id="7">@S</a> hi</p>');
   assert.equal(defaultHandoffStatus({ statusLabels: { Done: 1, 'Ready for Q/A': 7 } }), 'Ready for Q/A');

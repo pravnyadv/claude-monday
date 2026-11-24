@@ -224,3 +224,22 @@ test('an MR whose description the host returned without a task link has no task;
   assert.deepEqual(s.resolve({ mr: MR2 }).items, ['10000000001']);
   s.close();
 });
+
+test('links-hook: a task id named in a prompt while working in a personal repo links no task', sqlite, () => {
+  const db = tmpDb();
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'personal-'));
+  execFileSync('git', ['init', '-q', repo]);
+  execFileSync('git', ['-C', repo, 'remote', 'add', 'origin', 'git@github.com:pravnyadv/tooling.git']);
+  execFileSync('node', [path.join(__dirname, '..', 'hooks', 'links-hook.js')], { input: JSON.stringify({ session_id: 'T', cwd: repo, hook_event_name: 'UserPromptSubmit', prompt: 'case on monday item 10000000001' }), env: { ...process.env, MONDAY_LINKS_DB: db, MR_REBASE_BOT: '' } });
+  const s = require('../lib/links').openLinks(db);
+  assert.deepEqual(s.resolve({ item: '10000000001' }).sessions, []);
+  s.close();
+});
+
+test('isHeadless: a claude -p transcript is headless, one the user typed in is not', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tx-'));
+  const write = (name, entry) => (fs.writeFileSync(path.join(dir, name), `{"type":"user","entrypoint":"${entry}"}\n`), path.join(dir, name));
+  const { isHeadless } = require('../lib/transcripts');
+  assert.equal(isHeadless(write('a.jsonl', 'sdk-cli')), true);
+  assert.equal(isHeadless(write('b.jsonl', 'cli')), false);
+});

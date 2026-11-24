@@ -14,7 +14,7 @@
 const path = require('path');
 const { openLinks, itemIdsIn, mrUrlsIn } = require('../lib/links');
 const { linksDbPath } = require('../lib/paths');
-const { createsMr, isAutomated, checkoutOf, commandDir, commandSourceBranch, transcriptTitle, contextTokens } = require('../lib/transcripts');
+const { createsMr, isAutomated, isPersonalRepo, checkoutOf, commandDir, commandSourceBranch, transcriptTitle, contextTokens } = require('../lib/transcripts');
 
 const NUDGE_TOKENS = Number(process.env.MONDAY_SWITCH_NUDGE_TOKENS || 60000);
 
@@ -34,7 +34,8 @@ function record(p) {
     links.touchBranch({ session, repo, branch, cwd: workDir });
     if (p.hook_event_name === 'UserPromptSubmit') {
       out = taskSwitchNudge(links, p); // before this prompt's own links land
-      for (const item of itemIdsIn(p.prompt)) {
+      // a task id named while working on my own tooling (deskbot's cases, test fixtures) is data, not that task's work
+      for (const item of isPersonalRepo(workDir) ? [] : itemIdsIn(p.prompt)) {
         links.linkTaskSession(item, session, 'prompt');
         links.linkTaskBranch(item, repo, branch, 'prompt');
       }
